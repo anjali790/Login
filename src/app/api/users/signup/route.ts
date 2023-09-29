@@ -1,14 +1,11 @@
-import { connect } from "@/dbConfig/dbCongig";
-
+import { connect } from "@/dbConfig/dbConfig";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
-
 import bcryptjs from "bcryptjs";
 
 connect();
 
 export async function POST(request: NextRequest) {
-
   try {
     const reqBody = await request.json();
     const { username, email, password } = reqBody;
@@ -17,6 +14,7 @@ export async function POST(request: NextRequest) {
 
     //check if user already exists
     const user = await User.findOne({ email });
+
     if (user) {
       return NextResponse.json(
         { error: "User already exists" },
@@ -24,23 +22,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    //hash pass
+    //hash password
     const salt = await bcryptjs.genSalt(10);
-    const hashedPass = await bcryptjs.hash(password, salt);
+    const hashedPassword = await bcryptjs.hash(password, salt);
 
-    //create new user
     const newUser = new User({
       username,
       email,
-      password: hashedPass,
+      password: hashedPassword,
     });
 
     const savedUser = await newUser.save();
-    console.log({savedUser});
+    console.log(savedUser);
+
+    //send verification email
 
     return NextResponse.json({
-      message: "user ceated sucessfully",
-      sucess: true,
+      message: "User created successfully",
+      success: true,
       savedUser,
     });
   } catch (error: any) {
